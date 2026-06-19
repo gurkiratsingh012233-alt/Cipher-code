@@ -1,40 +1,36 @@
-// 1. Helper Function: Finds the modular inverse for decryption
-function modInverse(a, m) {
-    for (let x = 1; x < m; x++) {
-        if ((a * x) % m === 1) {
-            return x;
-        }
+// Switches between the Shift Slider and the Dropdown depending on the Cipher chosen
+function updateUI() {
+    const type = document.getElementById("cipherType").value;
+    if (type === "caesar") {
+        document.getElementById("caesarKeyDiv").style.display = "block";
+        document.getElementById("multiplicativeKeyDiv").style.display = "none";
+    } else {
+        document.getElementById("caesarKeyDiv").style.display = "none";
+        document.getElementById("multiplicativeKeyDiv").style.display = "block";
     }
-    return 1;
+    processText(); // Automatically recalculate text when the cipher type is changed
 }
 
-// 2. Core Function: Multiplicative Encryption / Decryption
-function multiplicativeCipher(text, key, isDecrypt) {
-    let result = '';
-    const m = 26; // Alphabet length
+// Modify your existing processing/calculation function
+function processText() {
+    const inputText = document.getElementById("inputText").value; // Your input textarea
+    const isDecrypt = document.getElementById("decryptToggle").checked; // Assuming you have a toggle/radio for decrypt
+    const cipherType = document.getElementById("cipherType").value;
     
-    // If decrypting, we use the inverse of the key mathematically
-    let effectiveKey = isDecrypt ? modInverse(key, m) : key;
-
-    for (let i = 0; i < text.length; i++) {
-        let char = text[i];
-        
-        // Handle Uppercase letters
-        if (char.match(/[A-Z]/)) {
-            let p = char.charCodeAt(0) - 65; // Convert 'A' to 0
-            let c = (p * effectiveKey) % m;
-            result += String.fromCharCode(c + 65);
-        }
-        // Handle Lowercase letters
-        else if (char.match(/[a-z]/)) {
-            let p = char.charCodeAt(0) - 97; // Convert 'a' to 0
-            let c = (p * effectiveKey) % m;
-            result += String.fromCharCode(c + 97);
-        }
-        // Keep spaces, numbers, and symbols exactly the same
-        else {
-            result += char;
-        }
+    let outputText = "";
+    
+    // Route to the correct algorithm
+    if (cipherType === "caesar") {
+        const shift = parseInt(document.getElementById("shiftValue").value);
+        outputText = caesarCipher(inputText, shift, isDecrypt); // Your existing caesar function
+    } else {
+        const key = parseInt(document.getElementById("multiKey").value);
+        outputText = multiplicativeCipher(inputText, key, isDecrypt);
     }
-    return result;
+    
+    document.getElementById("outputText").value = outputText; // Your result textarea
 }
+
+// Ensure elements listen for changes
+document.getElementById("cipherType").addEventListener("change", processText);
+document.getElementById("multiKey").addEventListener("change", processText);
